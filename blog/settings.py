@@ -91,36 +91,19 @@ TEMPLATES = [
 WSGI_APPLICATION = 'blog.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-
-# # postgresql
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'blog',
-#         'USER': 'tom',
-#         # 'HOST': '127.0.0.1',
-#         'PASSWORD': ''
-#     }
-# }
-
-
-# mysql
+# postgresql
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'blog',
-        'USER': 'root',
-        'PASSWORD': '123',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-        'OPTIONS': {
-            'sql_mode': 'traditional',
-            'charset': 'utf8mb4',
-        }
+        'USER': 'tom',
+        # 'HOST': '127.0.0.1',
+        'PASSWORD': ''
     }
 }
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -255,3 +238,9 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = TIME_ZONE
+
+# local_settings.py文件为每个用户自己的私人配置，比如覆盖配置database key等
+try:
+    from .my_settings import *
+except ImportError:
+    print("local_settings not found, run at default settings")
