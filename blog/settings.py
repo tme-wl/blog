@@ -32,6 +32,8 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # cache settings
+#  是否开启页面缓存
+IS_CACHES = False
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -41,8 +43,6 @@ CACHES = {
         }
     }
 }
-
-
 
 # Application definition
 
@@ -101,9 +101,6 @@ DATABASES = {
         'PASSWORD': ''
     }
 }
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
