@@ -1,0 +1,137 @@
+{% extends 'blog/base.html' %}
+{% block content %}
+  <script type="text/javascript" src="//unpkg.com/wangeditor/release/wangEditor.min.js"></script>
+  <div class="container">
+    <div class="row">
+      <!-- 博客页面实体 -->
+      <div class="col-md-8">
+        <div class="well">
+          <div>
+            <h4>博客标题</h4>
+            <input class="form-control" id="title" placeholder="输入博客标题">
+          </div>
+
+          <h4 style="margin-top: 20px;">内容</h4>
+          <div id="editor">
+          </div>
+          <hr>
+          <button id="btn1" class="btn btn-default">提交</button>
+        </div>
+      </div>
+      <!-- 博客旁列 -->
+      <div class="col-md-4">
+        <div class="well">
+          <h4>Blog Search</h4>
+          <form action="/search/" method="get">
+            <div class="input-group">
+              <input type="text" name="search_for" class="form-control">
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="submit">
+                  <span class="glyphicon glyphicon-search"></span>
+                </button>
+              </span>
+            </div>
+          </form>
+          <!-- /.input-group -->
+        </div>
+
+        <!-- Blog Categories Well -->
+        <!--category-->
+        <div class="well">
+            <h4><span class="glyphicon glyphicon-align-justify"></span>    博客分类</h4>
+            <div class="row">
+                <div class="col-lg-6">
+                  <select class="form-control" id="category" style="height: 30px;width:80px;">
+                    <option value="0" selected="selected">未分类</option>
+                    {% for category in categorys %}
+                      <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                  </select>
+
+                </div>
+            </div>
+        </div>
+        {% load staticfiles %}
+        <!--标签云-->
+        <div class="well">
+            <h4><span class="glyphicon glyphicon-align-justify"></span>    选择标签</h4>
+            <div class="row">
+                <div class="col-lg-12">
+                  <div id="tags">
+                    {% for tag in tag_list %}
+                      <span id="{{ tag.id }}" style="padding: 3px;border-radius: 4px;" onclick="change_tar('{{ tag.id }}')">{{ tag.name }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+            </div>
+        </div>
+        <!-- Side Widget Well -->
+        <div class="well">
+          <h4><span class="glyphicon glyphicon-align-justify"></span> 博客介绍</h4>
+          <p>欢迎来到我的个人博客，此博客主要用于记录技术随笔，个人感想等各种杂文。由于初学编程，个中纰漏，望请指出，谢谢！</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+<script type="text/javascript">
+    Array.prototype.remove = function(val) {
+    var index = this.indexOf(val);
+    if (index > -1) {
+    this.splice(index, 1);
+    }
+    };
+
+    var tags = [];
+    var category = [];
+    var E = window.wangEditor;
+    var editor = new E('#editor');
+    editor.customConfig.zIndex = 100;
+    editor.create();
+
+
+    document.getElementById('btn1').addEventListener('click', function () {
+        // 读取 html
+        var html = editor.txt.html();
+        var text = editor.txt.text();
+        var title = $("#title").val();
+        console.log(tags,'tags');
+        var data = {'title':title, 'body':html, 'tags':String(tags), 'category':category}
+        $.ajax({
+          type: 'POST',
+          url: '/admin/add_one/',
+          data: data,
+          success: success_function,
+        });
+    }, false);
+
+    function success_function(msg){
+      if(msg['status'] == 200){
+        alert(msg['msg'])
+      }else{
+        alert(msg['msg'])
+      }
+    }
+    function change_tar(id){
+      var color = $('#'+id).css("background-color")
+        if (color == 'rgb(164, 164, 164)'){
+          // 取消选择
+          tags.remove(id);
+          $('#'+id).css("background-color", "rgba(0, 0, 0, 0)")
+        }else{
+          // 添加选择
+          tags.push(id);
+          $('#'+id).css("background-color", "rgb(164, 164, 164)")
+        }
+        console.log(tags)
+    };
+
+    $("select#category").change(function(){
+     category = $(this).val()
+    });
+</script>
+
+{% endblock content %}
+
+

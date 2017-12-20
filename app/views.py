@@ -5,7 +5,10 @@ from django.shortcuts import get_object_or_404, redirect, get_list_or_404
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 import markdown
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 import re
+from django.http import JsonResponse
 import logging
 from .tasks import celery_send_email
 
@@ -25,7 +28,7 @@ class IndexView(ListView):
         Returns:
 
         """
-        article_list = Article.objects.filter(status='p')
+        article_list = Article.objects.all()
         for article in article_list:
             article.body = markdown.markdown(article.body,)
         return article_list
@@ -185,3 +188,62 @@ def suggest_view(request):
             return redirect('app:thanks')
     return render(request, 'blog/about.html', {'form': form})
 
+
+@login_required(login_url='/admin/login/?next=/admin/add_blog')
+def Add_blog(request):
+
+    categorys = []
+    objs = Category.objects.all().values_list("id", "name")
+    for obj in objs:
+        categorys.append({'id': obj[0], 'name': obj[1]})
+    tags = []
+    objs = Tag.objects.all().values_list("id", 'name')
+    for obj in objs:
+        tags.append({'id': obj[0], 'name': obj[1]})
+    return render(request, 'blog/add.html', {'tag_list': tags, 'categorys': categorys})
+
+
+@csrf_exempt
+def Add_one(request):
+    """添加博客文章
+        传入方法 POST
+        传入参数:
+        title  str 文章标题
+        body str  正文的html代码
+        category int 类别外键
+        tags [int, int]  标签外键组
+    """
+    if request.method == 'POST':
+        title = request.POST.get('title', '')
+        body = request.POST.get('body', '')
+        category = request.POST.get('category', 0)
+        tags = request.POST.get('tags', [])
+        if tags:
+            tags = tags.split(',')
+        if not title:
+            return JsonResponse({'status': 500, 'msg': "标题不能为空"})
+        if len(title) > 100:
+            return JsonResponse({"status": 500, "msg": "标题太长了"})
+        if not body:
+            return JsonResponse({'status': 500, 'msg': "正文不能为空"})
+        cate = None
+        if int(category) != 0:
+            try:
+                cate = Category.objects.get(id=int(category))
+            except Category.DoesNotExist:
+                return JsonResponse({"status": 500, "msg": "分类错误"})
+        tags_list = []
+        for tag in tags:
+            try:
+                ta = Tag.objects.get(id=int(tag))
+                tags_list.append(ta)
+            except Tag.DoesNotExist:
+                return JsonResponse({"status": "500", "msg": "标签错误"})
+        if int(category) != 0:
+            article = Article.objects.create(title=title, body=body, category=cate)
+        else:
+            article = Article.objects.create(title=title, body=body)
+        logger.info("添加博文title:{0}".format(title))
+        for i in tags_list:
+            article.tags.add(i)
+        return JsonResponse({'status': 200, 'msg': "存储成功"})
