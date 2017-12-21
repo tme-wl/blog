@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^about_me/$', views.suggest_view, name='about_me'),
     url(r'^tags/(?P<tag_id>\d+)$', views.TagView.as_view(), name='tag'),
     url(r'^thanks/$', views.thanks, name='thanks'),
+    url(r'^photo/upload/$', views.Upload_photo, name='upload'),
 ]
 
 if settings.IS_CACHES:

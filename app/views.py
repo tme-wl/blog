@@ -11,6 +11,9 @@ import re
 from django.http import JsonResponse
 import logging
 from .tasks import celery_send_email
+from PIL import Image
+from blog.settings import STATIC_URL, BASE_DIR
+import os
 
 # Create your views here.
 
@@ -247,3 +250,20 @@ def Add_one(request):
         for i in tags_list:
             article.tags.add(i)
         return JsonResponse({'status': 200, 'msg': "存储成功"})
+
+
+@csrf_exempt
+def Upload_photo(request):
+    """
+    博文上传图片接口
+    :param request: 
+    :return: 
+    """
+    if request.method == 'POST':
+        img = request.FILES.get('file_name')
+        if img.name.endswith('.png') or img.name.endswith('.jpg'):
+            photo = Image.open(img)
+            photo.save(os.path.join(BASE_DIR, "static/") + img.name)
+            return JsonResponse({"errno": 0, 'data': [STATIC_URL + img.name]})
+        else:
+            return JsonResponse({"errno": 500, 'data': []})

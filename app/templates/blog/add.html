@@ -87,6 +87,8 @@
     var category = [];
     var E = window.wangEditor;
     var editor = new E('#editor');
+    editor.customConfig.uploadImgServer = '/photo/upload/'
+    editor.customConfig.uploadFileName = 'file_name'
     editor.customConfig.zIndex = 100;
     editor.create();
 
@@ -96,7 +98,6 @@
         var html = editor.txt.html();
         var text = editor.txt.text();
         var title = $("#title").val();
-        console.log(tags,'tags');
         var data = {'title':title, 'body':html, 'tags':String(tags), 'category':category}
         $.ajax({
           type: 'POST',
@@ -124,7 +125,6 @@
           tags.push(id);
           $('#'+id).css("background-color", "rgb(164, 164, 164)")
         }
-        console.log(tags)
     };
 
     $("select#category").change(function(){
